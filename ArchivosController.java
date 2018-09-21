@@ -4,7 +4,7 @@ public class ArchivosController {
     //Nota super importante para que funcione las configuraciones tienen que ser un numero par
     //si configuraciones no es un numero par entonces va a variar el tamaño o se pueden perder el peso del ultimo nodo
     int llave,posicion;
-    int configuraciones;
+    int configuraciones=16;
     StringBuffer nombre;
     String conn_weight="",name;
     int registro_inicial=0;
@@ -19,17 +19,21 @@ public class ArchivosController {
         int n;
         long lreg,desplazamiento;
         Maestro=new RandomAccessFile("Aguacatitos","rw");
+        indice=new RandomAccessFile("indice","rw");
         Scanner entrada_datos=new Scanner(System.in);
         do{
             System.out.println("ingrese la llave clave del nodo");
             llave=entrada_datos.nextInt();
             if(escribir_indice(llave)){//vamos al metodo escribir indice
-                Maestro.writeInt(llave);//si todo sale bien al escribir el indice comensamos a escribir nuestro registro
+                Maestro.writeInt(llave);
+                /*si sale bien al escribir el indice comensamos a escribir nuestro registro*/
                 System.out.println("ingrese el nodo al que se conecta y su peso nodo/peso si son mas de uno separe por una coma ejemplo 2/5,3/1,4/3");
                 datos=entrada_datos.next();
                 obtenerNodos(datos);//obtenemos una lista donde nos proporcionan el nodo a que se conecta el nuevo registro y con que peso
                 for(n=0;n<configuraciones;n++) {
-                    if(conexion[n]!=""){//es posible que no nos ingresen suficientes datos para esto es esta condicion para escribir todos los datos de los arreglos
+                    if(conexion[n]!=null){//es posible que no nos ingresen suficientes datos para esto es esta condicion para escribir todos los datos de los arreglos
+                        //System.out.print(conexion[n]);
+                        //System.out.print(peso[n]);
                         Maestro.writeInt(Integer.parseInt(conexion[n]));
                         Maestro.writeInt(Integer.parseInt(peso[n]));
                     }
@@ -59,7 +63,7 @@ public class ArchivosController {
     public void obtenerNodos(String datos){
         int n;
         nodos=datos.split(",");//separamos los nodos y los pesos
-        for (n=0;n<configuraciones;n++){
+        for (n=0;n<nodos.length;n++){
             aux=nodos[n].split("/");//separamos de cada nodo la conexion y el peso
             conexion[n]=aux[0];//guardamos el nodo al que se conecta
             peso[n]=aux[1];//guardamos el peso al que se conecta
