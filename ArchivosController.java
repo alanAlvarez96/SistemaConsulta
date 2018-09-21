@@ -118,7 +118,6 @@ public class ArchivosController {
         RandomAccessFile file;
         int llaveLeida,posi=-1,i;
         long tam;
-        boolean existe=false;
         file=new RandomAccessFile("indice","rw");
         tam=file.length();
             for(i=0;i<tam/8;i++){
@@ -152,7 +151,8 @@ public class ArchivosController {
         System.out.println(llave);
         long longitud_registro=rango_desp();
         System.out.println("longitud: "+longitud_registro);
-        int pos=buscarIndice2(llave),i,dt,key;
+        int pos=buscarIndice2(llave);
+        int i,dt,key;
         long desplazamiento;
         System.out.println("=)la posicion es:"+pos);
         String nombre,nodos="";
