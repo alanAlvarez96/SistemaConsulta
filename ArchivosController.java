@@ -3,13 +3,14 @@ import java.util.*;
 public class ArchivosController {
     //Nota super importante para que funcione las configuraciones tienen que ser un numero par
     //si configuraciones no es un numero par entonces va a variar el tamaño o se pueden perder el peso del ultimo nodo
-    int llave,posicion;
+    int llave,posicion=1;
     int configuraciones=16;
     StringBuffer nombre;
     String conn_weight="",name;
     int registro_inicial=0;
     RandomAccessFile Maestro;
     RandomAccessFile indice;
+    DataOutputStream indice2;
     String  datos;
     String[]nodos;
     String[]conexion=new String[configuraciones];
@@ -18,10 +19,13 @@ public class ArchivosController {
     public void escribir_maestro()throws IOException{
         int n;
         long lreg,desplazamiento;
-        Maestro=new RandomAccessFile("Aguacatitos","rw");
-        indice=new RandomAccessFile("indice","rw");
+
+        //indice=new RandomAccessFile("indice","rw");
         Scanner entrada_datos=new Scanner(System.in);
         do{
+            Maestro=new RandomAccessFile("Aguacatitos","rw");
+            desplazamiento=Maestro.length();
+            Maestro.seek(desplazamiento);
             System.out.println("ingrese la llave clave del nodo");
             llave=entrada_datos.nextInt();
             if(escribir_indice(llave)){//vamos al metodo escribir indice
@@ -71,37 +75,40 @@ public class ArchivosController {
     }
     public boolean escribir_indice(int llave)throws IOException{
         boolean continuar=false;//partimos de la idea de que no se puede escribir
-        if(buscarIndice(llave)){//nos movemos a comprobar si el indice que quiere ingresar ya existe en nuestro archivo
-            indice=new RandomAccessFile("indice","rw");
-            indice.writeInt(llave);
-            indice.writeInt(posicion);
+        long longitud;
+        RandomAccessFile file;
+        if(!(buscarIndice(llave))){//nos movemos a comprobar si el indice que quiere ingresar ya existe en nuestro archivo
+            file=new RandomAccessFile("indice","rw");
+            longitud=file.length();
+            file.seek(longitud);
+            file.writeInt(llave);
+            file.writeInt(posicion+1);
+            file.close();
             continuar=true;
         }
-        indice.close();
         return continuar;
     }
     public boolean buscarIndice (int llave) throws IOException{
-        indice=new RandomAccessFile("indice","r");
-        long pointer,fpointer;
-        int count_pos=1;
-        int llave_indice;
-        boolean existe=true;
-        if(indice.length() == 0){
-            //si la longitud de nuestro archivo es 0 quiere decir que no tiene nada y por tanto se puede escribir la llave
-            return true;
+        RandomAccessFile file;
+        int llaveLeida,posi,i;
+        long tam;
+        boolean existe=false;
+        file=new RandomAccessFile("indice","rw");
+        tam=file.length();
+        if(tam==0)
+            existe=false;
+        else{
+            for(i=0;i<tam/8;i++){
+                llaveLeida=file.readInt();
+                if(llave==llaveLeida){
+                    posicion=file.readInt();
+                    existe=true;
+                }
+                else
+                    file.readInt();
         }
-        else {
-            //si tiene algo entonces pasamos a buscar registro por  registro
-            while ((pointer=indice.getFilePointer())!=(fpointer=indice.length())){
-                llave_indice=indice.readInt();//obtenemos la llave
-                count_pos=indice.readInt();//obtenemos la posicion de esa llave
-                if(llave==llave_indice)//si la llave que buscamos cambiamos existe a false para decir que el registro ya existe
-                        existe=false;
-            }
-            if(existe)
-                posicion=count_pos+1;//como obtenemos la posicion de cada registro le sumamos 1 para saber la posicion siguiente
+        file.close();
         }
-        indice.close();
         return existe;
     }
 }
